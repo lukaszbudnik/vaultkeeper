@@ -1,0 +1,25 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601} [%t] %-5level %c{1.} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUTCTX" class="ch.qos.logback.core.ConsoleAppender" >
+        <encoder>
+            <pattern>%date{ISO8601} [%t] [CTX:%X{context}] %-5level %c{1.} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="akka.actor" level="info"/>
+
+    <logger name="com.github.lukaszbudnik.vaultkeeper" level="debug" additivity="false">
+        <appender-ref ref="STDOUTCTX"/>
+    </logger>
+
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>

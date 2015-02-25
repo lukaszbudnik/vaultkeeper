@@ -1,0 +1,26 @@
+# Status API
+
+curl -i -L http://localhost:8080
+curl -i http://localhost:8080/status
+
+# Management API
+
+curl -i \
+    -u lukasz:budnik \
+    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+    -X POST -H "Content-Type: application/json" \
+    -d '{"name":"xyz","content":"abc", "credentials":[{"username": "abc123"}]}' \
+    http://localhost:8080/api/v1/mngmnt/keys
+
+curl -i \
+    -u lukasz:budnik \
+    -X POST -H "Content-Type: application/json" \
+    -d '{"name": "abc456"}' \
+    http://localhost:8080/api/v1/mngmnt/keys/xyz/credentials
+
+curl -i \
+    -H "X-VaultKeeper-Algorithm: VaultKeeper-SHA512-PRIVATE-KEY-SIGNED" \
+    -H "X-VaultKeeper-Credentials: abc" \
+    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+    -H "X-VaultKeeper-Signature:sadsadsdasd" \
+    http://localhost:8080/api/v1/keys/existing
