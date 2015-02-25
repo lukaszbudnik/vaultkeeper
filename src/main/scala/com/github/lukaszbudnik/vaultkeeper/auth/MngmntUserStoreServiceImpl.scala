@@ -5,9 +5,9 @@ import javax.inject.Singleton
 @Singleton
 class MngmntUserStoreServiceImpl extends MngmntUserStoreService {
 
-  override def authenticate(username: String, password: String, context: String, signature: String): Option[String] = {
+  override def authenticate(username: String, password: String): Option[User] = {
     if (username == "lukasz" && password == "budnik") {
-      Some(username + password)
+      Some(User(username + password))
     } else {
       None
     }

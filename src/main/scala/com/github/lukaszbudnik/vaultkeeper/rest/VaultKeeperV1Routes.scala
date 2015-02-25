@@ -2,7 +2,7 @@ package com.github.lukaszbudnik.vaultkeeper.rest
 
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.lukaszbudnik.vaultkeeper.auth.MngmntAuthenticator
+import com.github.lukaszbudnik.vaultkeeper.auth.{Credentials, MngmntAuthenticator}
 import org.json4s.{DefaultFormats, FieldSerializer}
 import org.slf4j.{MDC, LoggerFactory}
 import spray.httpx.Json4sJacksonSupport
@@ -14,8 +14,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 case class Registered(success: Boolean)
-
-case class Credentials(username: String)
 
 case class Key(name: String, content: String, credentials: Seq[Credentials])
 
@@ -54,7 +52,7 @@ trait VaultKeeperV1Routes extends HttpService with MngmntAuthenticator with Json
             }
           }
         } ~ (pathPrefix("keys")) {
-          (headerValueByName("X-VaultKeeper-Algorithm") & headerValueByName("X-VaultKeeper-Credentials") & headerValueByName("X-VaultKeeper-Signature")) { (algorithm, credentials, signature) =>
+          (headerValueByName("X-VaultKeeper-Algorithm") & headerValueByName("X-VaultKeeper-Key") & headerValueByName("X-VaultKeeper-Signature")) { (algorithm, credentials, signature) =>
 
             (path(Segment) & get) { name => {
 
