@@ -1,8 +1,8 @@
-package com.github.lukaszbudnik.vaultkeeper.rest
+package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import java.util.UUID
 
-import com.github.lukaszbudnik.vaultkeeper.auth.{Credentials, MngmntUserStoreService, User}
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.{Credentials, MngmntUserStoreService, User}
 import org.apache.commons.codec.digest.HmacUtils
 import org.junit.runner.RunWith
 import org.mockito.Matchers.{eq => isEq}

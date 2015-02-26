@@ -1,10 +1,10 @@
-package com.github.lukaszbudnik.vaultkeeper.rest
+package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
-import spray.testkit.Specs2RouteTest
-import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
-import spray.http.{StatusCodes, ContentTypes}
+import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
+import spray.http.{ContentTypes, StatusCodes}
+import spray.testkit.Specs2RouteTest
 
 @RunWith(classOf[JUnitRunner])
 class StatusRoutesSpec extends Specification with Specs2RouteTest with JsonProtocol {

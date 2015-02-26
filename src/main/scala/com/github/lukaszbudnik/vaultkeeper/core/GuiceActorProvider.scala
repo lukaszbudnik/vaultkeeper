@@ -2,10 +2,10 @@ package com.github.lukaszbudnik.vaultkeeper.core
 
 import javax.inject.Inject
 
-import akka.actor.{Props, ActorRef, ActorRefFactory, Actor}
+import akka.actor.{Actor, ActorRef, ActorRefFactory, Props}
 import com.google.inject.Injector
 
-class GuiceActorProvider @Inject() (injector: Injector) {
+class GuiceActorProvider @Inject()(injector: Injector) {
 
   private def createFromGuice[T <: Actor](clazz: Class[T]): T = injector.getInstance(clazz)
 

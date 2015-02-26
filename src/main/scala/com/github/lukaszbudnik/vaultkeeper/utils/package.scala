@@ -1,6 +1,5 @@
 package com.github.lukaszbudnik.vaultkeeper
 
-import java.nio.charset.StandardCharsets
 import java.security.Security
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider

@@ -1,4 +1,4 @@
-package com.github.lukaszbudnik.vaultkeeper.rest
+package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import akka.actor.ActorContext
 import org.json4s.FieldSerializer

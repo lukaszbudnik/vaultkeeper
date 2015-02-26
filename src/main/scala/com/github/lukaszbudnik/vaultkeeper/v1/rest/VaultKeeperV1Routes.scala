@@ -1,10 +1,10 @@
-package com.github.lukaszbudnik.vaultkeeper.rest
+package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.lukaszbudnik.vaultkeeper.auth.{Credentials, MngmntAuthenticator}
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.{Credentials, MngmntAuthenticator}
 import org.json4s.{DefaultFormats, FieldSerializer}
-import org.slf4j.{MDC, LoggerFactory}
+import org.slf4j.{LoggerFactory, MDC}
 import spray.httpx.Json4sJacksonSupport
 import spray.routing.HttpService
 import spray.routing.authentication.BasicAuth

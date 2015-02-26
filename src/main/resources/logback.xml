@@ -6,7 +6,7 @@
         </encoder>
     </appender>
 
-    <appender name="STDOUTCTX" class="ch.qos.logback.core.ConsoleAppender" >
+    <appender name="STDOUTCTX" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%date{ISO8601} [%t] [CTX:%X{context}] %-5level %c{1.} - %msg%n</pattern>
         </encoder>

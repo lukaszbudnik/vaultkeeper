@@ -2,10 +2,9 @@ package com.github.lukaszbudnik.vaultkeeper.v1.keys
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActorRef
-import com.github.lukaszbudnik.vaultkeeper.keys.{KeyStoreActor, KeyStoreService}
 import com.github.lukaszbudnik.vaultkeeper.testkit.VaultKeeperTestKit
 import org.junit.runner.RunWith
-import org.mockito.Matchers.{eq => isEq, anyString => isAnyString}
+import org.mockito.Matchers.{anyString => isAnyString, eq => isEq}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner

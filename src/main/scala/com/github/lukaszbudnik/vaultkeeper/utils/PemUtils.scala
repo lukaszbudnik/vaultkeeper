@@ -3,13 +3,11 @@ package com.github.lukaszbudnik.vaultkeeper.utils
 import java.io._
 import java.nio.charset.StandardCharsets
 import java.security._
-import java.security.spec.{X509EncodedKeySpec, PKCS8EncodedKeySpec, KeySpec}
+import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.openssl.{PEMKeyPair, PEMParser}
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter
+import org.bouncycastle.openssl.{PEMKeyPair, PEMParser}
 
 object PemUtils {
 

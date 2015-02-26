@@ -1,10 +1,10 @@
-package com.github.lukaszbudnik.vaultkeeper.rest
+package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import javax.inject.Inject
 
 import akka.actor.Actor
 import akka.event.Logging
-import com.github.lukaszbudnik.vaultkeeper.auth.MngmntUserStoreService
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.MngmntUserStoreService
 import spray.http.MediaTypes
 import spray.httpx.Json4sJacksonSupport
 

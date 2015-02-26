@@ -2,10 +2,10 @@ package com.github.lukaszbudnik.vaultkeeper
 
 import akka.actor.ActorSystem
 import akka.io.IO
-import com.github.lukaszbudnik.vaultkeeper.auth.{MngmntUserStoreService, MngmntUserStoreServiceImpl}
 import com.github.lukaszbudnik.vaultkeeper.core.GuiceActorProvider
-import com.github.lukaszbudnik.vaultkeeper.keys.{KeyStoreServiceImpl, KeyStoreService, KeyStoreActor}
-import com.github.lukaszbudnik.vaultkeeper.rest.VaultKeeperServiceActor
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.{MngmntUserStoreService, MngmntUserStoreServiceImpl}
+import com.github.lukaszbudnik.vaultkeeper.v1.keys.{KeyStoreActor, KeyStoreService, KeyStoreServiceImpl}
+import com.github.lukaszbudnik.vaultkeeper.v1.rest.VaultKeeperServiceActor
 import com.google.inject.{AbstractModule, Guice}
 import spray.can.Http
 

@@ -1,4 +1,4 @@
-package com.github.lukaszbudnik.vaultkeeper.keys
+package com.github.lukaszbudnik.vaultkeeper.v1.keys
 
 trait KeyStoreService {
 

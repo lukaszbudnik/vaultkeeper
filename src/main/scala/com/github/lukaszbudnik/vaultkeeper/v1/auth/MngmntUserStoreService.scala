@@ -1,4 +1,4 @@
-package com.github.lukaszbudnik.vaultkeeper.auth
+package com.github.lukaszbudnik.vaultkeeper.v1.auth
 
 trait MngmntUserStoreService {
 

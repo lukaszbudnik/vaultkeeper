@@ -1,7 +1,5 @@
 package com.github.lukaszbudnik.vaultkeeper.utils
 
-import java.io.StringReader
-
 import org.apache.commons.io.IOUtils
 import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
