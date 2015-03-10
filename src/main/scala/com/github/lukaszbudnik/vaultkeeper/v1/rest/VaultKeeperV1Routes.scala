@@ -2,36 +2,76 @@ package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.lukaszbudnik.vaultkeeper.v1.auth.{Credentials, MngmntAuthenticator}
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.apikey.{ApiKey, ApiKeyAuth}
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.auth
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt.{UserAuth, User}
+import com.github.lukaszbudnik.vaultkeeper.v1.keys._
 import org.json4s.{DefaultFormats, FieldSerializer}
 import org.slf4j.{LoggerFactory, MDC}
+import spray.can.Http
+import spray.http.{StatusCodes, StatusCode}
 import spray.httpx.Json4sJacksonSupport
-import spray.routing.HttpService
-import spray.routing.authentication.BasicAuth
+import spray.routing.authentication._
+import spray.routing.{AuthenticationFailedRejection, HttpService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-case class Registered(success: Boolean)
-
-case class Key(name: String, content: String, credentials: Seq[Credentials])
-
 object RestJsonProtocol extends Json4sJacksonSupport {
   lazy val json4sJacksonFormats = DefaultFormats +
-    FieldSerializer[Registered]() +
-    FieldSerializer[Key]()
+    FieldSerializer[KeyAdd]() +
+    FieldSerializer[KeyAdded]()
 }
 
-trait VaultKeeperV1Routes extends HttpService with MngmntAuthenticator with JsonProtocol {
+
+trait VaultKeeperV1Routes extends HttpService with JsonProtocol {
+
+  implicit val timeout = Timeout(2.seconds)
 
   val log = LoggerFactory.getLogger(classOf[VaultKeeperV1Routes])
 
-  def getKey(name: String): Future[Option[String]] = {
-    implicit val timeout = Timeout(2.seconds)
-    val keyStoreActor = actorRefFactory.actorSelection("/user/vaultkeeper-keystore")
-    val key: Future[Option[String]] = (keyStoreActor ? name).mapTo[Option[String]]
+  def validateRequest(algorithm: String): Boolean = algorithm == auth.HMAC_ALGORITHM
+
+  def addKey(keyAdd: KeyAdd): Future[KeyAdded] = {
+    val keyActor = actorRefFactory.actorSelection("/user/vaultkeeper-keyactor")
+    val keyAdded: Future[KeyAdded] = (keyActor ? keyAdd).mapTo[KeyAdded]
+    keyAdded
+  }
+
+  def updateKey(keyUpdate: KeyUpdate): Future[KeyUpdated] = {
+    val keyActor = actorRefFactory.actorSelection("/user/vaultkeeper-keyactor")
+    val keyUpdated: Future[KeyUpdated] = (keyActor ? keyUpdate).mapTo[KeyUpdated]
+    keyUpdated
+  }
+
+  def getKey(keyName: String): Future[Option[String]] = {
+    val keyActor = actorRefFactory.actorSelection("/user/vaultkeeper-keyactor")
+    val key: Future[Option[String]] = (keyActor ? keyName).mapTo[Option[String]]
     key
+  }
+
+  def getKeyMetaData(keyName: String): Future[Option[KeyMetaData]] = {
+    val keyActor = actorRefFactory.actorSelection("/user/vaultkeeper-keyactor")
+    val key: Future[Option[KeyMetaData]] = (keyActor ? KeyGetMetaData(keyName)).mapTo[Option[KeyMetaData]]
+    key
+  }
+
+  def authenticateMngmnt(userPass: Option[UserPass]): Future[Option[User]] = {
+    userPass match {
+      case Some(userPass) => {
+        val apiKeyAuthActor = actorRefFactory.actorSelection("/user/vaultkeeper-mngmntactor")
+        val authResponse: Future[Option[User]] = (apiKeyAuthActor ? UserAuth(userPass.user, userPass.pass)).mapTo[Option[User]]
+        authResponse
+      }
+      case _ => Future(None)
+    }
+  }
+
+  def authenticateApiKey(request: ApiKeyAuth): Future[Option[ApiKey]] = {
+    val apiKeyAuthActor = actorRefFactory.actorSelection("/user/vaultkeeper-apiauthactor")
+    val authResponse: Future[Option[ApiKey]] = (apiKeyAuthActor ? request).mapTo[Option[ApiKey]]
+    authResponse
   }
 
   val vaultKeeperV1Routes =
@@ -41,36 +81,63 @@ trait VaultKeeperV1Routes extends HttpService with MngmntAuthenticator with Json
 
       pathPrefix("api" / "v1") {
         pathPrefix("mngmnt") {
-          authenticate(BasicAuth(userPassAuthenticator _, "mngmnt api")) { user =>
-            path("keys") {
+          authenticate(BasicAuth(authenticateMngmnt _, "mngmnt api")) { user =>
+            pathPrefix("keys") {
               post {
-                entity(as[Key]) { key =>
-                  log.info(s"registering $key for user $user")
-                  complete(Registered(true))
+                  entity(as[KeyAdd]) { keyAdd =>
+                    log.info(s"$user registered ${keyAdd.key.keyName} for api keys ${keyAdd.credentials}")
+                    complete(addKey(keyAdd))
+                  }
+                } ~ (put & path(Segment / "credentials")) { keyName =>
+                  entity(as[Seq[ApiKey]]) { credentials =>
+                    log.info(s"$user updated ${keyName} credentials with api keys ${credentials}")
+
+                    complete(updateKey(KeyUpdate(keyName, None, Some(credentials))))
+                  }
+                } ~ (put & path(Segment / "isActive")) { keyName =>
+                entity(as[Boolean]) { isActive =>
+                  log.info(s"$user updated ${keyName} credentials with isActive ${isActive}")
+
+                  complete(updateKey(KeyUpdate(keyName, Some(isActive), None)))
                 }
+              } ~ (get & path(Segment)) { keyName =>
+                  complete(getKeyMetaData(keyName))
               }
-            }
+              }
           }
         } ~ (pathPrefix("keys")) {
-          (headerValueByName("X-VaultKeeper-Algorithm") & headerValueByName("X-VaultKeeper-Key") & headerValueByName("X-VaultKeeper-Signature")) { (algorithm, credentials, signature) =>
+          (headerValueByName(`X-VaultKeeper-Algorithm`.headerName) & headerValueByName(`X-VaultKeeper-Credentials`.headerName) &
+            headerValueByName(`X-VaultKeeper-Signature`.headerName)) { (algorithm, credentials, signature) =>
 
             (path(Segment) & get) { name => {
 
-              //                val (isValid, errorMessage) = isValidType(algorithm, credentials, context, signature)
+              validate(validateRequest(algorithm), s"Unknown algorithm $algorithm") {
 
-              validate(true, "Request is not valid: $errorMessage") {
+                val authResponse = authenticateApiKey(ApiKeyAuth(credentials, algorithm, context, signature))
 
-                log.info(s" custom headers $context $signature")
+                val response = authResponse map { authReponse =>
+                  authReponse match {
+                    case Some(apiKey: ApiKey) => {
+                      log.info(s"custom headers $context $signature")
 
-                val key = getKey(name)
+                      val key = getKey(name)
+                      key map { key =>
+                        key match {
+                          case Some(content) => {
+                            log.info(s"got key!! $content")
+                            Some(Key(name, content))
+                          }
+                          case _ => None
+                        }
 
-                complete(key map { key =>
-                  key match {
-                    case Some(content) => Some(Key(name, content, Seq(Credentials(credentials))))
-                    case _ => None
+                      }
+                    }
+                    case _ => Future(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, Nil))
                   }
 
-                })
+                }
+
+                complete(response)
               }
             }
             }
@@ -79,17 +146,5 @@ trait VaultKeeperV1Routes extends HttpService with MngmntAuthenticator with Json
       }
     }
     }
-
-  def isValidType(algorithm: String, credentials: String, context: String, signature: String): Boolean = {
-    if (algorithm != "VaultKeeper-SHA512-PRIVATE-KEY-SIGNED") {
-      throw new IllegalArgumentException(s"Unknown algorithm $algorithm")
-    }
-
-
-
-
-    true
-  }
-
 
 }

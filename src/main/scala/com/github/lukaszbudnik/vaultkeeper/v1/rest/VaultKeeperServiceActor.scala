@@ -4,11 +4,11 @@ import javax.inject.Inject
 
 import akka.actor.Actor
 import akka.event.Logging
-import com.github.lukaszbudnik.vaultkeeper.v1.auth.MngmntUserStoreService
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt.MngmntUserAuthService
 import spray.http.MediaTypes
 import spray.httpx.Json4sJacksonSupport
 
-class VaultKeeperServiceActor @Inject()(val mngmntUserStoreService: MngmntUserStoreService)
+class VaultKeeperServiceActor @Inject()(val mngmntUserStoreService: MngmntUserAuthService)
   extends Actor with VaultKeeperV1Routes with StatusRoutes with JsonProtocol {
   def actorRefFactory = context
 

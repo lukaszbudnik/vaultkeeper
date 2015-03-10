@@ -10,8 +10,8 @@ object `X-VaultKeeper-Algorithm` {
   def apply(headerValue: String): HttpHeader = RawHeader(headerName, headerValue)
 }
 
-object `X-VaultKeeper-Key` {
-  lazy val headerName = "X-VaultKeeper-Key"
+object `X-VaultKeeper-Credentials` {
+  lazy val headerName = "X-VaultKeeper-Credentials"
 
   def apply(headerValue: String): HttpHeader = RawHeader(headerName, headerValue)
 }

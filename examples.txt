@@ -5,22 +5,56 @@ curl -i http://localhost:8080/status
 
 # Management API
 
+## Add key "xyz"
+
 curl -i \
     -u lukasz:budnik \
-    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
     -X POST -H "Content-Type: application/json" \
-    -d '{"name":"xyz","content":"abc", "credentials":[{"username": "abc123"}]}' \
+    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+    -d '{"key": { "keyName":"xyz","content":"abc" }, "credentials": [{"apiKey": "0123456789"}]}' \
     http://localhost:8080/api/v1/mngmnt/keys
 
-curl -i \
-    -u lukasz:budnik \
-    -X POST -H "Content-Type: application/json" \
-    -d '{"name": "abc456"}' \
-    http://localhost:8080/api/v1/mngmnt/keys/xyz/credentials
+## Update whole "xyz" key - NOT
 
 curl -i \
-    -H "X-VaultKeeper-Algorithm: VaultKeeper-SHA512-PRIVATE-KEY-SIGNED" \
-    -H "X-VaultKeeper-Credentials: abc" \
+    -u lukasz:budnik \
+    -X PUT -H "Content-Type: application/json" \
     -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
-    -H "X-VaultKeeper-Signature:sadsadsdasd" \
-    http://localhost:8080/api/v1/keys/existing
+    -d '{"key": { "keyName":"xyz","content":"abc" }, "credentials": [{"apiKey": "0111111110"}]}' \
+    http://localhost:8080/api/v1/mngmnt/keys/xyz
+
+## Update credentials only for key "xyz"
+
+curl -i \
+    -u lukasz:budnik \
+    -X PUT -H "Content-Type: application/json" \
+    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+    -d '[{"apiKey": "9876543210"}]' \
+    http://localhost:8080/api/v1/mngmnt/keys/xyz/credentials
+
+## Update isActive only for key "xyz"
+
+curl -i \
+       -u lukasz:budnik \
+       -X PUT -H "Content-Type: application/json" \
+       -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+       -d 'false' \
+       http://localhost:8080/api/v1/mngmnt/keys/xyz/isActive
+
+## Get metadata for key "xyz"
+
+curl -i \
+    -u lukasz:budnik \
+    -X GET -H "Content-Type: application/json" \
+    -H "X-VaultKeeper-Context:2014-02-23T23:58:13Z" \
+    -d '[{"apiKey": "9876543210"}]' \
+    http://localhost:8080/api/v1/mngmnt/keys/xyz
+
+# Key API
+
+curl -i \
+    -H "X-VaultKeeper-Algorithm: HMAC-SHA256" \
+    -H "X-VaultKeeper-Credentials: 0123456789" \
+    -H "X-VaultKeeper-Context: b7192b11-aec4-401d-a6de-9db66f7b23e8" \
+    -H "X-VaultKeeper-Signature: 584be25b7f8a85d9c4a9a65d626de95d003f7d3ce4649ccc493a6a84a0061b92" \
+    http://localhost:8080/api/v1/keys/xyz

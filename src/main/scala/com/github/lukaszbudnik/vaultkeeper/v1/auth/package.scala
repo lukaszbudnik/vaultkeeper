@@ -1,4 +1,4 @@
-package com.github.lukaszbudnik.vaultkeeper
+package com.github.lukaszbudnik.vaultkeeper.v1.auth
 
 package object auth {
 
