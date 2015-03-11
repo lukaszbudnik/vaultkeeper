@@ -20,7 +20,7 @@ class MngmntAuthActorSpec extends Specification with Mockito {
   val userRemove = UserRemove("removed")
 
   val mockApiKeyAuthService = {
-    val m: MngmntUserAuthService = mock[MngmntUserAuthService]
+    val m: MngmntAuthService = mock[MngmntAuthService]
     m.authenticate(auth.username, auth.password) returns Some(user)
     m.authenticate(authWrongApiKey.username, authWrongApiKey.password) returns None
     m

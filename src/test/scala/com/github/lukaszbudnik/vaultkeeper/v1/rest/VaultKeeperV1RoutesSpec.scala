@@ -2,10 +2,13 @@ package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import java.util.UUID
 
+import akka.actor.ActorSystem
+import com.github.lukaszbudnik.vaultkeeper.core.{VaultKeeperActorProvider, VaultKeeperModule}
 import com.github.lukaszbudnik.vaultkeeper.v1.auth.apikey.{ApiKey, ApiKeyAuth}
 import com.github.lukaszbudnik.vaultkeeper.v1.auth.auth
 import com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt.User
 import com.github.lukaszbudnik.vaultkeeper.v1.keys._
+import com.google.inject.Guice
 import org.apache.commons.codec.digest.HmacUtils
 import org.junit.runner.RunWith
 import org.mockito.Matchers.{eq => isEq}

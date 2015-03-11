@@ -57,7 +57,7 @@ class KeyActorSpec extends Specification with Mockito {
       actorRef ! keyAdd
       expectMsg(KeyAdded())
 
-      there was one(mockKeyStoreService).insert(keyAdd)
+      there was one(mockKeyStoreService).add(keyAdd)
     }
 
     "update key" in new VaultKeeperTestKit(ActorSystem("actor-system-test")) {

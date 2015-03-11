@@ -3,9 +3,9 @@ package com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt
 import javax.inject.Singleton
 
 @Singleton
-class MngmntUserAuthServiceInMemoryImpl extends MngmntUserAuthService {
+class MngmntAuthServiceInMemoryImpl extends MngmntAuthService {
 
-  private var users = Map("lukasz" -> "budnik")
+  private[mngmnt] var users = Map("lukasz" -> "budnik")
 
   override def authenticate(username: String, password: String): Option[User] = {
     users.find(i => i._1 == username && i._2 == password).map(i => User(i._1))

@@ -24,7 +24,7 @@ class KeyActor @Inject()(keyService: KeyService) extends Actor {
     }
 
     case keyAdd: KeyAdd => {
-      keyService.insert(keyAdd)
+      keyService.add(keyAdd)
       sender ! KeyAdded()
     }
 

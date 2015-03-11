@@ -7,25 +7,25 @@ import com.google.inject.Injector
 
 class GuiceActorProvider @Inject()(injector: Injector) {
 
-  private def createFromGuice[T <: Actor](clazz: Class[T]): T = injector.getInstance(clazz)
+  private def createFromGuice[T](clazz: Class[T]): T = injector.getInstance(clazz)
 
-  def create[T <: Actor](implicit m: Manifest[T]): T = {
+  def createInstance[T](implicit m: Manifest[T]): T = {
     createFromGuice(m.runtimeClass.asInstanceOf[Class[T]])
   }
 
-  def create[T <: Actor](actorRefFactory: ActorRefFactory)(implicit m: Manifest[T]): ActorRef = {
-    create(None, actorRefFactory, (p: Props) => p)
+  def createActor[T <: Actor](actorRefFactory: ActorRefFactory)(implicit m: Manifest[T]): ActorRef = {
+    createActor(actorRefFactory, None)
   }
 
-  def create[T <: Actor](name: Option[String] = None, actorRefFactory: ActorRefFactory)(implicit m: Manifest[T]): ActorRef = {
-    create(name, actorRefFactory, (p: Props) => p)
+  def createActor[T <: Actor](actorRefFactory: ActorRefFactory, name: Option[String])(implicit m: Manifest[T]): ActorRef = {
+    createActor(actorRefFactory, name, (p: Props) => p)
   }
 
-  def create[T <: Actor](name: Option[String], actorRefFactory: ActorRefFactory, propsOptions: Props => Props)(implicit m: Manifest[T]): ActorRef = {
+  def createActor[T <: Actor](actorRefFactory: ActorRefFactory, name: Option[String], propsOptions: Props => Props)(implicit m: Manifest[T]): ActorRef = {
     name.map({ n =>
-      actorRefFactory.actorOf(propsOptions(Props(create(m))), n)
+      actorRefFactory.actorOf(propsOptions(Props(createInstance(m))), n)
     }).getOrElse({
-      actorRefFactory.actorOf(propsOptions(Props(create(m))))
+      actorRefFactory.actorOf(propsOptions(Props(createInstance(m))))
     })
   }
 

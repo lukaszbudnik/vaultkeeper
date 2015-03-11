@@ -8,46 +8,44 @@ import com.github.lukaszbudnik.vaultkeeper.v1.auth.apikey.ApiKey
 @Singleton
 class KeyServiceInMemoryImpl extends KeyService {
 
-  private case class InternalKey(keyName: String, isActive: Boolean, lastUpdated: Date, content: String, credentials: Seq[ApiKey]) {
+  private[keys] case class InternalKey(keyName: String, isActive: Boolean, lastUpdated: Date, content: String, credentials: Seq[ApiKey]) {
     def toKey: Key = {
       Key(keyName, content)
     }
+
     def toKeyMetaData: KeyMetaData = {
       KeyMetaData(keyName, isActive, lastUpdated, credentials)
     }
   }
 
-  private var keys: Map[String, InternalKey] = Map()
+  private[keys] var keys: Map[String, InternalKey] = Map()
 
   override def get(keyName: String): Option[Key] = keys.get(keyName).map(_.toKey)
 
   override def getMetaData(keyName: String): Option[KeyMetaData] = keys.get(keyName).map(_.toKeyMetaData)
 
-  override def insert(keyAdd: KeyAdd): Unit = {
+  override def add(keyAdd: KeyAdd): Unit = {
     keys = keys + (keyAdd.key.keyName -> InternalKey(keyAdd.key.keyName, true, new Date, keyAdd.key.content, keyAdd.credentials))
   }
 
-  override def update(keyUpdate: KeyUpdate): Unit = {
+  override def update(keyUpdate: KeyUpdate): Option[KeyMetaData] = {
     val key = keys.get(keyUpdate.keyName)
-    key match {
-      case Some(key) => {
-
-        val keyWithCredentials = keyUpdate.credentials match {
-          case Some(credentials) => key.copy(credentials = credentials)
-          case None => key
-        }
-
-        val keyWithCredentialsAndIsActive = keyUpdate.isActive match {
-          case Some(isActive) => keyWithCredentials.copy(isActive = isActive)
-          case None => keyWithCredentials
-        }
-
-        val keyToUpdate = keyWithCredentialsAndIsActive.copy(lastUpdated = new Date)
-
-        keys = keys + (keyToUpdate.keyName -> keyToUpdate)
-
+    key.map { key =>
+      val keyWithCredentials = keyUpdate.credentials match {
+        case Some(credentials) => key.copy(credentials = credentials)
+        case None => key
       }
-      case None =>
+
+      val keyWithCredentialsAndIsActive = keyUpdate.isActive match {
+        case Some(isActive) => keyWithCredentials.copy(isActive = isActive)
+        case None => keyWithCredentials
+      }
+
+      val keyToUpdate = keyWithCredentialsAndIsActive.copy(lastUpdated = new Date)
+
+      keys = keys + (keyToUpdate.keyName -> keyToUpdate)
+
+      key.toKeyMetaData
     }
   }
 

@@ -5,7 +5,7 @@ import javax.inject.Inject
 import akka.actor.Actor
 
 
-class MngmntAuthActor @Inject()(mngmntUserStoreService: MngmntUserAuthService) extends Actor {
+class MngmntAuthActor @Inject()(mngmntUserStoreService: MngmntAuthService) extends Actor {
 
 
   override def receive: Receive = _ match {

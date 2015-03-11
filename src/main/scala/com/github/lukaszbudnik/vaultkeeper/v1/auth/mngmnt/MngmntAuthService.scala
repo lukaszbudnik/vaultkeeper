@@ -1,6 +1,6 @@
 package com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt
 
-trait MngmntUserAuthService {
+trait MngmntAuthService {
 
   def authenticate(username: String, password: String): Option[User]
 
