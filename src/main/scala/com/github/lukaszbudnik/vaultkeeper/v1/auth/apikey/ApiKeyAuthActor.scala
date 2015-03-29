@@ -8,8 +8,12 @@ class ApiKeyAuthActor @Inject()(apiKeyService: ApiKeyAuthService) extends Actor 
 
    def receive = _ match {
 
-     case authenticationRequest: ApiKeyAuth => {
-       sender ! apiKeyService.authenticate(authenticationRequest)
+     case apiKeyAdd: ApiKeyAdd => {
+       sender ! apiKeyService.add(apiKeyAdd)
+     }
+
+     case apiKeyAuth: ApiKeyAuth => {
+       sender ! apiKeyService.authenticate(apiKeyAuth)
      }
 
    }

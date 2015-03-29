@@ -19,10 +19,10 @@ class ApiKeyAuthServiceInMemoryImpl extends ApiKeyAuthService {
     }
   }
 
-  override def add(apiKey: String, secretKey: String): ApiKey = {
+  override def add(apiKeyAdd: ApiKeyAdd): ApiKey = {
     this.synchronized {
-      apiKeys = apiKeys :+ InMemoryApiKey(apiKey, secretKey)
-      ApiKey(apiKey)
+      apiKeys = apiKeys :+ InMemoryApiKey(apiKeyAdd.apiKey, apiKeyAdd.secretKey)
+      ApiKey(apiKeyAdd.apiKey)
     }
   }
 
@@ -31,7 +31,7 @@ class ApiKeyAuthServiceInMemoryImpl extends ApiKeyAuthService {
       val foundApiKey = apiKeys.find(_.apiKey == apiKey)
       foundApiKey map { foundApiKey =>
         remove(apiKey)
-        add(apiKey, secretKey)
+        add(ApiKeyAdd(apiKey, secretKey))
       }
     }
   }

@@ -21,7 +21,7 @@ class ApiKeyAuthServiceInMemorySpec extends Specification with Mockito {
   "ApiKeyAuthServiceInMemoryImpl" should {
 
     "add api key" in {
-      apiKeyAuthService.add(apiKey, apiKey)
+      apiKeyAuthService.add(ApiKeyAdd(apiKey, apiKey))
 
       apiKeyAuthService.apiKeys must haveSize(1)
     }

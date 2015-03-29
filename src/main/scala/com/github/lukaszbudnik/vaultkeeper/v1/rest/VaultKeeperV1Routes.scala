@@ -2,7 +2,7 @@ package com.github.lukaszbudnik.vaultkeeper.v1.rest
 
 import akka.pattern.ask
 import akka.util.Timeout
-import com.github.lukaszbudnik.vaultkeeper.v1.auth.apikey.{ApiKey, ApiKeyAuth}
+import com.github.lukaszbudnik.vaultkeeper.v1.auth.apikey.{ApiKeyAdd, ApiKey, ApiKeyAuth}
 import com.github.lukaszbudnik.vaultkeeper.v1.auth.auth
 import com.github.lukaszbudnik.vaultkeeper.v1.auth.mngmnt.{UserAuth, User}
 import com.github.lukaszbudnik.vaultkeeper.v1.keys._
@@ -45,9 +45,9 @@ trait VaultKeeperV1Routes extends HttpService with JsonProtocol {
     keyUpdated
   }
 
-  def getKey(keyName: String): Future[Option[String]] = {
+  def getKey(keyName: String): Future[Option[Key]] = {
     val keyActor = actorRefFactory.actorSelection("/user/vaultkeeper-keyactor")
-    val key: Future[Option[String]] = (keyActor ? keyName).mapTo[Option[String]]
+    val key: Future[Option[Key]] = (keyActor ? KeyGet(keyName)).mapTo[Option[Key]]
     key
   }
 
@@ -74,6 +74,12 @@ trait VaultKeeperV1Routes extends HttpService with JsonProtocol {
     authResponse
   }
 
+  def addApiKey(apiKeyAdd: ApiKeyAdd): Future[ApiKey] = {
+    val apiKeyAuthActor = actorRefFactory.actorSelection("/user/vaultkeeper-apiauthactor")
+    val apiKey: Future[ApiKey] = (apiKeyAuthActor ? apiKeyAdd).mapTo[ApiKey]
+    apiKey
+  }
+
   val vaultKeeperV1Routes =
     (headerValueByName("Remote-Address") & headerValueByName(`X-VaultKeeper-Context`.headerName)) { (remoteAddress, context) => {
 
@@ -82,6 +88,15 @@ trait VaultKeeperV1Routes extends HttpService with JsonProtocol {
       pathPrefix("api" / "v1") {
         pathPrefix("mngmnt") {
           authenticate(BasicAuth(authenticateMngmnt _, "mngmnt api")) { user =>
+            pathPrefix("apikeys") {
+              post {
+                entity(as[ApiKeyAdd]) { apiKeyAdd =>
+                  log.info(s"$user registered new api key ${apiKeyAdd.apiKey}")
+                  val apiKey = addApiKey(apiKeyAdd)
+                  complete(apiKey)
+                }
+              }
+            } ~
             pathPrefix("keys") {
               post {
                   entity(as[KeyAdd]) { keyAdd =>
@@ -118,21 +133,15 @@ trait VaultKeeperV1Routes extends HttpService with JsonProtocol {
                 val response = authResponse map { authReponse =>
                   authReponse match {
                     case Some(apiKey: ApiKey) => {
-                      log.info(s"custom headers $context $signature")
+                      log.info(s"Api key $credentials successfully authenticated")
 
-                      val key = getKey(name)
-                      key map { key =>
-                        key match {
-                          case Some(content) => {
-                            log.info(s"got key!! $content")
-                            Some(Key(name, content))
-                          }
-                          case _ => None
-                        }
-
-                      }
+                      val keyFuture = getKey(name)
+                      keyFuture
                     }
-                    case _ => Future(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, Nil))
+                    case _ => {
+                      log.info(s"Authentication failed for $credentials")
+                      Future(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsRejected, Nil))
+                    }
                   }
 
                 }
